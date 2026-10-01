@@ -19,7 +19,7 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 - [x] **T7. Parser (`parser.ts`).** Recursive descent to an AST using the PLAN.md grammar, with precedence `* /` over `+ -` and parentheses. It handles number+scale+unit+label grouping and returns errors with a position. Tests cover valid and invalid lines.
 - [x] **T8. Evaluator (`evaluate.ts`).** AST to `Quantity { value, dim, timeExp, label }`, with dimension rules (no bytes×bytes, matching dims for + and -, timeExp must end up 0 or −1) and clear error messages.
 - [x] **T9. Formatter (`format.ts`).** 2-significant-digit rounding with the ≤3-digit exact exception and `~` marking; count suffixes (plain below 10,000 with separators, then K/M/B/T/Q); byte unit choice; bit-rate column. Builds the columns for rates (`/year /day /s [+bps]`) and for amounts (single value), with the label inserted.
-- [ ] **T10. `evaluateLine` API (`index.ts`).** Returns `{ kind: 'empty' | 'comment' | 'value' | 'error', columns?: string[], error?: string }`.
+- [x] **T10. `evaluateLine` API (`index.ts`).** Returns `{ kind: 'empty' | 'comment' | 'value' | 'error', columns?: string[], error?: string }`.
 - [ ] **T11. Golden tests.** The three examples from the brief, checked against the exact expected strings in PLAN.md, plus edge cases: tiny values (`1/year` in `/s`), huge values (EB/ZB), zero, labels, comments, inline comments and every error path.
 
 ## M3 — UI (`src/ui`)

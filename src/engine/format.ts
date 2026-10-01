@@ -1,8 +1,9 @@
 // Quantity → display columns with round numbers.
 //
-// Rounding: a value with at most 3 significant digits is shown exactly
-// (36.5 B, 146 PB); anything else is rounded to 2 significant digits and
-// marked with "~" (~1,200, ~41 GB).
+// Rounding: a value is shown exactly when it has at most 2 significant
+// digits (100 M, 3.5 PB), or 3 with a fractional shown number (36.5 B,
+// 1.25 GB). Anything else is rounded to 2 significant digits and marked
+// with "~" (~1,200, ~41 GB, 146 PB → ~150 PB).
 
 import type { Quantity } from "./evaluate";
 import { DAY, YEAR } from "./units";
@@ -52,39 +53,69 @@ export interface Rounded {
   approx: boolean;
 }
 
-/** Keeps values with ≤ 3 significant digits exact, otherwise rounds to 2 and marks them approximate. */
-export function roundValue(x: number): Rounded {
+/** Picks the suffix (unit) a magnitude is shown in; undefined means no suffix. */
+type SuffixPicker = (abs: number) => Suffix | undefined;
+
+const sameValue = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.abs(b);
+
+/**
+ * Keeps a value exact when it has ≤ 2 significant digits, or 3 significant
+ * digits and a fractional shown number (36.5 B, not 146 PB). Otherwise
+ * rounds to 2 significant digits and marks it approximate.
+ * `pick` gives the suffix the value will be shown in, which decides
+ * whether the shown number is fractional.
+ */
+export function roundValue(x: number, pick: SuffixPicker = () => undefined): Rounded {
   if (x === 0) return { value: 0, approx: false };
+  const two = Number(x.toPrecision(2));
+  if (sameValue(two, x)) return { value: two, approx: false };
   const three = Number(x.toPrecision(3));
-  if (Math.abs(three - x) <= 1e-9 * Math.abs(x)) {
-    return { value: three, approx: false };
+  if (sameValue(three, x)) {
+    const shown = Number((three / (pick(Math.abs(three))?.factor ?? 1)).toPrecision(3));
+    if (!Number.isInteger(shown)) return { value: three, approx: false };
+    return { value: roundThreeToTwo(three), approx: true };
   }
-  return { value: Number(x.toPrecision(2)), approx: true };
+  return { value: two, approx: true };
 }
+
+/**
+ * Rounds a value with exactly 3 significant digits to 2, halves away from
+ * zero, using its decimal digits: 365e21 is stored as 3.6499…e23, which
+ * toPrecision(2) would round down to 360e21 instead of 370e21.
+ */
+function roundThreeToTwo(three: number): number {
+  const [mantissa, exp] = three.toExponential(2).split("e"); // "3.65", "+23"
+  const digits = Math.round(Math.abs(Number(mantissa)) * 100); // 365
+  return Math.sign(three) * Number(`${Math.round(digits / 10)}e${Number(exp) - 1}`); // 37e22
+}
+
+const pickCountSuffix: SuffixPicker = (abs) =>
+  abs >= COUNT_PLAIN_LIMIT ? COUNT_SUFFIXES.find((s) => abs >= s.factor) : undefined;
+
+const unitPicker =
+  (units: Suffix[]): SuffixPicker =>
+  (abs) =>
+    units.find((u) => abs >= u.factor) ?? units[units.length - 1];
 
 /** Formats a count: "~1,200", "36.5 B", "100 M". */
 export function formatCount(x: number): string {
-  const { value, approx } = roundValue(x);
-  const abs = Math.abs(value);
-  const suffix = abs >= COUNT_PLAIN_LIMIT ? COUNT_SUFFIXES.find((s) => abs >= s.factor) : undefined;
-  return compose(value, approx, suffix);
+  return formatWith(x, pickCountSuffix);
 }
 
 /** Formats a size in bytes: "3.5 PB", "~41 GB", "500 B". */
 export function formatBytes(x: number): string {
-  return formatWithUnits(x, BYTE_UNITS);
+  return formatWith(x, unitPicker(BYTE_UNITS));
 }
 
 /** Formats a rate in bits per second: "~320 Gbps". */
 export function formatBitRate(bitsPerSecond: number): string {
-  return formatWithUnits(bitsPerSecond, BIT_RATE_UNITS);
+  return formatWith(bitsPerSecond, unitPicker(BIT_RATE_UNITS));
 }
 
-function formatWithUnits(x: number, units: Suffix[]): string {
-  const { value, approx } = roundValue(x);
-  const abs = Math.abs(value);
-  const unit = units.find((u) => abs >= u.factor) ?? units[units.length - 1];
-  return compose(value, approx, unit);
+function formatWith(x: number, pick: SuffixPicker): string {
+  const { value, approx } = roundValue(x, pick);
+  // Pick the suffix again after rounding: 999.7 KB rounds to ~1 MB.
+  return compose(value, approx, pick(Math.abs(value)));
 }
 
 function compose(value: number, approx: boolean, suffix: Suffix | undefined): string {
@@ -96,23 +127,18 @@ function compose(value: number, approx: boolean, suffix: Suffix | undefined): st
 }
 
 /**
- * Builds the result columns for an evaluated line.
- * - rate: "<n> [label] /year", "/day", "/s", plus "<n> Gbps" for sizes
- * - amount: a single "<n> [label]"
+ * Builds the value columns for an evaluated line (the label is shown separately).
+ * - rate: "<n> /year", "<n> /day", "<n> /s", plus "<n> Gbps" for sizes
+ * - amount: a single "<n>"
  */
 export function formatQuantity(q: Quantity): string[] {
   const fmt = q.dim === "bytes" ? formatBytes : formatCount;
-  const label = q.label ? ` ${q.label}` : "";
 
   if (q.timeExp === 0) {
-    return [fmt(q.value) + label];
+    return [fmt(q.value)];
   }
 
-  const columns = [
-    `${fmt(q.value * YEAR)}${label} /year`,
-    `${fmt(q.value * DAY)}${label} /day`,
-    `${fmt(q.value)}${label} /s`,
-  ];
+  const columns = [`${fmt(q.value * YEAR)} /year`, `${fmt(q.value * DAY)} /day`, `${fmt(q.value)} /s`];
   if (q.dim === "bytes") {
     columns.push(formatBitRate(q.value * 8));
   }

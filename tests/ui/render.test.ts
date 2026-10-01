@@ -9,21 +9,31 @@ const rowTexts = (container: HTMLElement) =>
 describe("renderResults", () => {
   it("renders one row per line, keeping empty and comment lines", () => {
     const container = document.createElement("div");
-    const lines = ["100M photos / day", "", "# note", "5qb"];
+    const lines = ["100M photos / day", "", "# note", "5qb", "4 MB * 100M"];
     renderResults(container, lines.map(evaluateLine));
 
     expect(rowTexts(container)).toEqual([
-      ["1", "36.5 B photos /year", "100 M photos /day", "~1,200 photos /s"],
+      ["1", "photos:", "36.5 B /year", "100 M /day", "~1,200 /s"],
       ["2"],
       ["3"],
       ["4", 'unknown unit "qb"'],
+      ["5", "", "400 TB"], // an empty label cell keeps the value columns aligned
     ]);
     expect([...container.querySelectorAll<HTMLElement>(".row")].map((r) => r.dataset.kind)).toEqual([
       "value",
       "empty",
       "comment",
       "error",
+      "value",
     ]);
+  });
+
+  it("puts the label in its own cell before the values", () => {
+    const container = document.createElement("div");
+    renderResults(container, ["100M photos * 4MB size /day"].map(evaluateLine));
+    const label = container.querySelector(".row > .label");
+    expect(label?.textContent).toBe("photos size:");
+    expect(label?.nextElementSibling?.textContent).toBe("~150 PB /year");
   });
 
   it("marks approximate cells and gives errors a column tooltip", () => {

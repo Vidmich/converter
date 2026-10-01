@@ -9,7 +9,10 @@ export interface Quantity {
   dim: "count" | "bytes";
   /** Power of seconds: 0 = amount, -1 = rate, 1 = duration. */
   timeExp: number;
-  /** Label words, e.g. "photos": from the leftmost labelled operand, or the enclosing group. */
+  /**
+   * Label words, e.g. "photos size": the labels of all operands, left to
+   * right, each word once; a label on an enclosing group replaces them.
+   */
   label?: string;
 }
 
@@ -55,7 +58,7 @@ function evalNode(node: Node): Quantity {
     case "binary": {
       const a = evalNode(node.left);
       const b = evalNode(node.right);
-      const label = a.label ?? b.label;
+      const label = combineLabels(a.label, b.label);
       switch (node.op) {
         case "+":
         case "-": {
@@ -91,6 +94,12 @@ function evalNode(node: Node): Quantity {
 /** Labels written on a quantity or group take priority over labels inside it. */
 function withLabel(q: Quantity, labels: string[]): Quantity {
   return labels.length ? { ...q, label: labels.join(" ") } : q;
+}
+
+/** Joins two labels left to right, keeping each word once: "photos" + "size" → "photos size". */
+function combineLabels(a: string | undefined, b: string | undefined): string | undefined {
+  const words = [...new Set([a, b].filter(Boolean).join(" ").split(" ").filter(Boolean))];
+  return words.length ? words.join(" ") : undefined;
 }
 
 /** Human description of a quantity's kind for error messages. */

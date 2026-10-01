@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { DAY, MONTH, YEAR, lookupScale, lookupUnit, miscasedUnitHint } from "../../src/engine/units";
+import { DAY, MONTH, YEAR, lookupScale, lookupUnit } from "../../src/engine/units";
 
 describe("lookupScale", () => {
   it.each([
     ["K", 1e3],
     ["k", 1e3],
     ["M", 1e6],
+    ["m", 1e6],
     ["B", 1e9],
+    ["b", 1e9],
     ["T", 1e12],
+    ["t", 1e12],
     ["thousand", 1e3],
     ["Million", 1e6],
     ["BILLION", 1e9],
@@ -16,15 +19,21 @@ describe("lookupScale", () => {
     expect(lookupScale(word)).toEqual({ factor });
   });
 
-  it.each(["m", "b", "t", "KB", "photos"])("%s is not a scale", (word) => {
+  it.each(["KB", "min", "photos"])("%s is not a scale", (word) => {
     expect(lookupScale(word)).toBeUndefined();
+  });
+
+  it("does not clash with periods", () => {
+    for (const word of ["k", "m", "b", "t"]) expect(lookupUnit(word)).toBeUndefined();
+    for (const word of ["s", "min", "h", "d", "wk", "mo", "y"]) expect(lookupScale(word)).toBeUndefined();
   });
 });
 
 describe("lookupUnit", () => {
-  it("reads B alone as billion, never as bytes", () => {
+  it("reads b/B alone as billion, never as bits or bytes", () => {
     expect(lookupUnit("B")).toBeUndefined();
-    expect(lookupScale("B")).toEqual({ factor: 1e9 });
+    expect(lookupUnit("b")).toBeUndefined();
+    expect(lookupScale("b")).toEqual({ factor: 1e9 });
   });
 
   it.each([
@@ -32,23 +41,28 @@ describe("lookupUnit", () => {
     ["Bytes", 1],
     ["KB", 1e3],
     ["kB", 1e3],
+    ["kb", 1e3],
     ["MB", 1e6],
+    ["Mb", 1e6],
+    ["mb", 1e6],
+    ["mB", 1e6],
     ["GB", 1e9],
+    ["gb", 1e9],
     ["TB", 1e12],
+    ["tB", 1e12],
     ["PB", 1e15],
+    ["pb", 1e15],
     ["EB", 1e18],
+    ["ZB", 1e21],
   ])("%s is a size of %d bytes", (word, factor) => {
     expect(lookupUnit(word)).toEqual({ kind: "size", factor });
-  });
-
-  it.each(["Mb", "gb", "mb", "Kb"])("%s is not a byte unit", (word) => {
-    expect(lookupUnit(word)).toBeUndefined();
   });
 
   it.each([
     ["bit", 1 / 8],
     ["bits", 1 / 8],
     ["Kbit", 1e3 / 8],
+    ["mbit", 1e6 / 8],
     ["Gbit", 1e9 / 8],
   ])("%s is a size in bits", (word, factor) => {
     expect(lookupUnit(word)).toEqual({ kind: "size", factor });
@@ -84,15 +98,6 @@ describe("lookupUnit", () => {
   it("uses 365-day years and 30-day months", () => {
     expect(YEAR).toBe(365 * 86_400);
     expect(MONTH).toBe(30 * 86_400);
-  });
-
-  it("hints at the right spelling for miscased byte units", () => {
-    expect(miscasedUnitHint("Mb")).toBe('ambiguous unit "Mb": use MB for bytes or Mbit for bits');
-    expect(miscasedUnitHint("kb")).toBe('ambiguous unit "kb": use KB for bytes or Kbit for bits');
-    expect(miscasedUnitHint("MB")).toBeUndefined();
-    expect(miscasedUnitHint("kB")).toBeUndefined();
-    expect(miscasedUnitHint("b")).toBeUndefined();
-    expect(miscasedUnitHint("photos")).toBeUndefined();
   });
 
   it("does not know labels", () => {

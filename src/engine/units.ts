@@ -26,41 +26,30 @@ export interface Unit {
   factor: number;
 }
 
-// Single-letter scales are case-sensitive so that "B" (billion) never
-// collides with bytes and "M" (million) never collides with minutes.
-// "B" alone is always billion: bytes need a prefix (KB, MB…) or the word "byte".
-const CASE_SENSITIVE_SCALES: Record<string, number> = {
+// All lookups are case-insensitive; tables are keyed in lower case.
+// "b"/"B" alone is always billion: plain bytes and bits are written as the
+// words "byte(s)" and "bit(s)". Minutes are "min", never "m".
+const SCALES: Record<string, number> = {
   k: 1e3,
-  K: 1e3,
-  M: 1e6,
-  B: 1e9,
-  T: 1e12,
-};
-
-const WORD_SCALES: Record<string, number> = {
+  m: 1e6,
+  b: 1e9,
+  t: 1e12,
   thousand: 1e3,
   million: 1e6,
   billion: 1e9,
   trillion: 1e12,
 };
 
-// Byte units are case-sensitive: the trailing "B" must be upper case, so
-// "Mb"/"Gb" are not silently read as bytes. "kB" is accepted as well.
-const BYTE_UNITS: Record<string, number> = {
-  KB: 1e3,
-  kB: 1e3,
-  MB: 1e6,
-  GB: 1e9,
-  TB: 1e12,
-  PB: 1e15,
-  EB: 1e18,
-  ZB: 1e21,
-};
-
-// Case-insensitive word units, keyed in lower case.
-const WORD_UNITS: Record<string, Unit> = {
+const UNITS: Record<string, Unit> = {
   byte: { kind: "size", factor: 1 },
   bytes: { kind: "size", factor: 1 },
+  kb: { kind: "size", factor: 1e3 },
+  mb: { kind: "size", factor: 1e6 },
+  gb: { kind: "size", factor: 1e9 },
+  tb: { kind: "size", factor: 1e12 },
+  pb: { kind: "size", factor: 1e15 },
+  eb: { kind: "size", factor: 1e18 },
+  zb: { kind: "size", factor: 1e21 },
 
   bit: { kind: "size", factor: 1 / 8 },
   bits: { kind: "size", factor: 1 / 8 },
@@ -111,30 +100,16 @@ const PERIODS: Record<string, number> = {
   years: YEAR,
 };
 
-/** Returns the scale for a word such as "M", "k" or "billion", if it is one. */
+/** Returns the scale for a word such as "M", "k", "b" or "billion", if it is one. */
 export function lookupScale(word: string): Scale | undefined {
-  const factor = CASE_SENSITIVE_SCALES[word] ?? WORD_SCALES[word.toLowerCase()];
+  const factor = SCALES[word.toLowerCase()];
   return factor === undefined ? undefined : { factor };
 }
 
-/**
- * For a word that looks like a byte unit in the wrong case ("Mb", "gb"),
- * returns a hint naming the byte and bit spellings; otherwise undefined.
- */
-export function miscasedUnitHint(word: string): string | undefined {
-  if (BYTE_UNITS[word] !== undefined) return undefined;
-  const upper = word.toUpperCase();
-  if (upper === "B" || BYTE_UNITS[upper] === undefined) return undefined;
-  const prefix = upper[0] === "K" ? "K" : upper[0];
-  return `ambiguous unit "${word}": use ${upper} for bytes or ${prefix}bit for bits`;
-}
-
-/** Returns the unit for a word such as "MB", "Gbps", "bits" or "day", if it is one. */
+/** Returns the unit for a word such as "MB", "mb", "Gbps", "bits" or "day", if it is one. */
 export function lookupUnit(word: string): Unit | undefined {
-  const bytes = BYTE_UNITS[word];
-  if (bytes !== undefined) return { kind: "size", factor: bytes };
   const lower = word.toLowerCase();
-  const unit = WORD_UNITS[lower];
+  const unit = UNITS[lower];
   if (unit) return unit;
   const period = PERIODS[lower];
   if (period !== undefined) return { kind: "time", factor: period };

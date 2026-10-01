@@ -11,7 +11,7 @@
 
 import { EngineError } from "./errors";
 import type { Op, Token } from "./lexer";
-import { lookupScale, lookupUnit, miscasedUnitHint, type Unit } from "./units";
+import { lookupScale, lookupUnit, type Unit } from "./units";
 
 export type Node =
   | {
@@ -150,14 +150,8 @@ class Parser {
   }
 }
 
-/**
- * Rejects a word that can't be a label: one glued to the previous token
- * ("5qb") or a byte unit in the wrong case ("5 Mb"), which would otherwise
- * silently become a label and give a wrong answer.
- */
+/** Rejects a word glued to the previous token ("5qb"): it can't be a label. */
 function checkNotUnitLike(w: Extract<Token, { kind: "word" }>): void {
-  const hint = miscasedUnitHint(w.text);
-  if (hint) throw new EngineError(hint, w.pos);
   if (!w.spaced) throw new EngineError(`unknown unit "${w.text}"`, w.pos);
 }
 

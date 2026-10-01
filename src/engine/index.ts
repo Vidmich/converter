@@ -9,10 +9,10 @@ import { parse } from "./parser";
 export type LineResult =
   | { kind: "empty" }
   | { kind: "comment" }
-  | { kind: "value"; columns: string[] }
+  | { kind: "value"; columns: string[]; label?: string }
   | { kind: "error"; error: string; pos?: number };
 
-/** Evaluates one line of input into display columns, or an error message. */
+/** Evaluates one line of input into display columns (plus its label, if any), or an error message. */
 export function evaluateLine(line: string): LineResult {
   try {
     const { tokens, comment } = lex(line);
@@ -20,7 +20,8 @@ export function evaluateLine(line: string): LineResult {
       return comment === undefined ? { kind: "empty" } : { kind: "comment" };
     }
     const quantity = evaluate(parse(tokens, line.length));
-    return { kind: "value", columns: formatQuantity(quantity) };
+    const columns = formatQuantity(quantity);
+    return quantity.label ? { kind: "value", label: quantity.label, columns } : { kind: "value", columns };
   } catch (e) {
     if (e instanceof EngineError) {
       return e.pos === undefined ? { kind: "error", error: e.message } : { kind: "error", error: e.message, pos: e.pos };

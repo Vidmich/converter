@@ -6,9 +6,9 @@ the same quantity as round numbers per year, per day and per second (plus a
 bit rate for data sizes).
 
 ```
-100M photos / day        →  36.5 B photos /year   100 M photos /day   ~1,200 photos /s
+100M photos / day        →  photos:  36.5 B /year   100 M /day   ~1,200 /s
 50B x 70KB / day         →  ~1.3 EB /year   3.5 PB /day   ~41 GB /s   ~320 Gbps
-4 MB * 100M/day          →  146 PB /year   400 TB /day   ~4.6 GB /s   ~37 Gbps
+4 MB * 100M/day          →  ~150 PB /year   400 TB /day   ~4.6 GB /s   ~37 Gbps
 ```
 
 ## Decisions
@@ -36,21 +36,25 @@ term      := factor (('*' | 'x' | '×' | '/') factor)*
 factor    := '(' expr ')' | quantity | '/' period
 quantity  := number scale? unit? label*
 number    := digits with optional '.' and ',' separators, e.g. 1,200 or 3.5
-scale     := K | M | B | T            (thousand, million, billion, trillion; case-insensitive k)
-unit      := B | KB | MB | GB | TB | PB | EB        (bytes)
-           | bit | bits | Kbit | Mbit | Gbit       (bits)
-           | bps | Kbps | Mbps | Gbps | Tbps       (bits per second)
+scale     := K | M | B | T            (thousand, million, billion, trillion)
+unit      := byte | bytes | KB | MB | GB | TB | PB | EB | ZB   (bytes)
+           | bit | bits | Kbit | Mbit | Gbit | … | Zbit        (bits)
+           | bps | Kbps | Mbps | Gbps | Tbps | Pbps            (bits per second)
+           (all scales and units are case-insensitive: m = M, mb = Mb = mB = MB)
 period    := s | sec | second | min | minute | h | hour | day | week | month | year | yr (+ plural)
 label     := any other word, e.g. photos, users, requests
 ```
 
 ### Ambiguity rules
 
-- `B` directly after a number with **no** byte prefix means **billion** (`50B` = 5·10¹⁰).
-  To mean bytes, write `byte` / `bytes` or use a prefixed unit (`KB`, `MB`…).
-- Byte units must end in an upper-case `B` (`KB`, `kB`, `MB`…). A byte unit in
-  the wrong case (`Mb`, `gb`) is an error with a hint (`use MB for bytes or
-  Mbit for bits`) rather than being silently treated as a label.
+- Scales and units ignore case (Organizer issue #3): `100m` = `100M`,
+  `5t` = `5T`, and `mb`, `Mb`, `mB` all mean `MB` (megabytes), likewise for
+  every prefix (`kb`, `gb`, `tB`…).
+- `b`/`B` alone always means **billion** (`50B` = `50b` = 5·10¹⁰). Plain bytes
+  and bits are written as words: `byte` / `bytes`, `bit` / `bits`. Prefixed
+  bits are `Kbit`, `Mbit`… (never `Mb`, which is megabytes).
+- Bit rates `bps`, `Kbps`, `Mbps`… are megabits etc. per second, any case.
+- Minutes are `min` (never `m`, which is million).
 - `x` is multiplication only between two quantities (`50B x 70KB`).
 - `/ day`, `/day` and `per day` all mean "divided by one day".
 - A space between number and scale/unit is allowed (`4 MB`, `100 M`).
@@ -68,11 +72,15 @@ Adding requires matching dimensions. Results with any other dimension
 
 ### Labels & comments
 
-- Spaced words after a quantity that are not units are its label, and all of
-  them are kept (`100M daily photos` → `daily photos`). The leftmost labelled
-  operand wins, but a label written after `( … )` overrides the labels inside.
-  The label appears in the `/year`, `/day` and `/s` columns but not in the
-  bit-rate column: `100M photos / day` → `36.5 B photos /year`.
+- Spaced words after a quantity that are not units are its label
+  (`100M daily photos` → `daily photos`).
+- The labels of all operands are combined left to right, with each word kept
+  once: `100M photos * 4MB size /day` → `photos size`, `100M photos * 2 photos`
+  → `photos`. A label written after `( … )` replaces the labels inside.
+- The label is shown once, in its own column before the values, followed by
+  a colon (Organizer issue #2):
+  `100M photos * 4MB /day` → `photos:  ~150 PB /year  400 TB /day  ~4.6 GB /s  ~37 Gbps`.
+  Rows without a label leave that column empty, so the values still line up.
 - A word glued to a number that isn't a known unit is an error (`5qb`).
 - `#` starts a comment: a line with only a comment gives an empty result row,
   and text after `#` on an expression line is ignored.
@@ -93,9 +101,12 @@ Number formatting:
 - Count: below 10,000 → plain with thousands separators (`~1,200`); otherwise
   `K`, `M`, `B`, `T`, `Q` suffixes (`36.5 B`).
 - Bytes: `B, KB, MB, GB, TB, PB, EB, ZB`. Pick the largest unit where the value is ≥ 1.
-- Round to 2 significant digits **except** when the exact value has
-  ≤ 3 significant digits (so `36.5 B`, `3.5 PB` and `146 PB` stay exact). Show a `~` prefix
-  whenever the shown value differs from the exact value by more than 1e-9 relative.
+- Round to 2 significant digits **except** when the exact value has ≤ 2
+  significant digits (`100 M`, `3.5 PB`), or exactly 3 and the shown number is
+  fractional (`36.5 B`, `1.25 GB`). So `146 PB` → `~150 PB`, `108 TB` → `~110 TB`,
+  `365` → `~370` (ties round away from zero). Show a `~` prefix whenever the
+  shown value differs from the exact value by more than 1e-9 relative.
+  (Changed by Organizer issue #1; it used to keep every ≤ 3-digit value exact.)
 - The suffix/unit is chosen *after* rounding, so `999.7 KB` → `~1 MB` and `9,999` → `~10 K`.
 - Magnitudes below 0.001 use exponent form (`1 /year` → `~3.2e-8 /s`).
 

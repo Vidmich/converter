@@ -19,6 +19,8 @@ export function renderResults(container: HTMLElement, results: LineResult[]): vo
     row.append(lineNo);
 
     if (result.kind === "value") {
+      // Always present (empty without a label) so value columns line up across rows.
+      row.append(span(doc, "label", result.label ? `${result.label}:` : ""));
       for (const text of result.columns) {
         row.append(createCell(doc, text));
       }
@@ -35,7 +37,7 @@ export function renderResults(container: HTMLElement, results: LineResult[]): vo
 }
 
 /**
- * Builds a result cell such as "~1,200 photos /s". The leading "~" and the
+ * Builds a result cell such as "~1,200 /s". The leading "~" and the
  * trailing period (" /s") get their own spans so they can be shown subtly.
  */
 function createCell(doc: Document, text: string): HTMLElement {

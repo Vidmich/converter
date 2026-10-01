@@ -9,6 +9,17 @@
   </head>
 
   <body>
-    <main id="app"></main>
+    <main id="app">
+      <textarea
+        id="input"
+        aria-label="Input: one quantity per line"
+        spellcheck="false"
+        autocomplete="off"
+        wrap="off"
+        autofocus
+        placeholder="100M photos / day&#10;50B x 70KB / day&#10;4 MB * 100M/day"
+      ></textarea>
+      <section id="results" aria-label="Results" aria-live="polite"></section>
+    </main>
   </body>
 </html>

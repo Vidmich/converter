@@ -115,3 +115,7 @@ tests/        Vitest: tests/engine/*.test.ts, tests/ui/render.test.ts
 ```
 
 The design and decisions are in [PLAN.md](PLAN.md), and the task history is in [TASKS.md](TASKS.md).
+
+## License
+
+MIT, see [LICENSE](LICENSE).

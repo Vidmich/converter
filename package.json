@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Back-of-the-envelope rate and size converter",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

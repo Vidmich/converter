@@ -27,6 +27,11 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "Dmytro Vidmych",
+    "copyright": "© 2026 Dmytro Vidmych",
+    "category": "Utility",
+    "shortDescription": "Back-of-the-envelope rate and size converter",
+    "longDescription": "Type rough quantities such as \"100M photos / day\" or \"4 MB * 100M/day\" and see them as round numbers per year, per day and per second, plus bit rates for data sizes.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

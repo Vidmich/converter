@@ -33,6 +33,6 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 
 ## M4 — Packaging
 
-- [ ] **T17. App icon & metadata.** Generate icons (`npm run tauri icon`), set the window title, version and description.
+- [x] **T17. App icon & metadata.** Generate icons (`npm run tauri icon`), set the window title, version and description.
 - [ ] **T18. Windows build.** `npm run tauri build` produces an `.msi`/NSIS installer. Install it, run it and confirm it starts quickly with no console window.
 - [ ] **T19. README.** What the app does, input syntax cheat sheet, how to build and test.

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Source for `npm run tauri icon app-icon.svg`: a tilde ("about this much") on a rounded square. -->
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="#2f6fdf"/>
+  <path d="M232 560 C 312 400, 432 400, 512 512 S 712 624, 792 464"
+        fill="none" stroke="#ffffff" stroke-width="96" stroke-linecap="round"/>
+</svg>

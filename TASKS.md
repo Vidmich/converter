@@ -28,7 +28,8 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 - [x] **T13. Live evaluation.** On input (debounced ~50 ms), split the text into lines, call `evaluateLine` for each and render one result row per line so row *n* matches line *n*.
 - [x] **T14. Line alignment & focus highlight.** Keep the results panel scrolled in sync with the input and highlight the result row for the line under the caret.
 - [x] **T15. Error & state styling.** Errors in muted red, comment and empty rows blank, `~` values styled subtly. Light and dark theme via `prefers-color-scheme`.
-- [ ] **T16. Manual check.** Type the brief's examples plus a few edge cases in `tauri dev` and confirm the output matches the golden tests.
+- [x] **T16. Manual check.** Type the brief's examples plus a few edge cases in `tauri dev` and confirm the output matches the golden tests.
+  Done: 15 golden lines (examples, variants, edge cases, comments, errors) typed through the real UI in the Vite page all render exactly as expected. `tauri dev` opens the "Converter" window with the new UI. Still to do by hand: a visual check of the native window in light and dark mode.
 
 ## M4 — Packaging
 

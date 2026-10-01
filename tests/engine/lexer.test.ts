@@ -93,6 +93,8 @@ describe("lex", () => {
     ["+", "+"],
     ["-", "-"],
     ["−", "-"],
+    ["^", "^"],
+    ["**", "^"],
   ])("reads operator %s", (text, op) => {
     expect(kinds(`1 ${text} 2`)).toEqual([1, op, 2]);
   });
@@ -101,6 +103,12 @@ describe("lex", () => {
     expect(kinds("100M photos / day")).toEqual([100, "w:M", "w:photos", "/", "w:day"]);
     expect(kinds("50B x 70KB / day")).toEqual([50, "w:B", "*", 70, "w:KB", "/", "w:day"]);
     expect(kinds("4 MB * 100M/day")).toEqual([4, "w:MB", "*", 100, "w:M", "/", "w:day"]);
+  });
+
+  it("reads ** as power only when the stars are adjacent", () => {
+    expect(kinds("10**6")).toEqual([10, "^", 6]);
+    expect(kinds("10 * * 6")).toEqual([10, "*", "*", 6]);
+    expect(kinds("2***3")).toEqual([2, "^", "*", 3]);
   });
 
   it("reads parentheses", () => {

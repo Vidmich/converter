@@ -16,6 +16,8 @@ function show(node: Node): string {
       return `{${show(node.expr)}}` + (node.labels.length ? `[${node.labels.join(" ")}]` : "");
     case "neg":
       return `(- ${show(node.operand)})`;
+    case "power":
+      return `(^ ${show(node.base)} ${show(node.exponent)})`;
     case "binary":
       return `(${node.op} ${show(node.left)} ${show(node.right)})`;
   }
@@ -72,6 +74,30 @@ describe("parse", () => {
     expect(p("(10M + 5M) users")).toBe("{(+ 10000000 5000000)}[users]");
   });
 
+  it("parses powers with ^ and **, spaced or not", () => {
+    expect(p("10^6")).toBe("(^ 10 6)");
+    expect(p("10 ^ 6")).toBe("(^ 10 6)");
+    expect(p("10**6")).toBe("(^ 10 6)");
+    expect(p("10 ** 6")).toBe("(^ 10 6)");
+  });
+
+  it("binds powers tighter than * and unary minus, right to left", () => {
+    expect(p("2 * 10^3")).toBe("(* 2 (^ 10 3))");
+    expect(p("-2^2")).toBe("(- (^ 2 2))");
+    expect(p("2^3^2")).toBe("(^ 2 (^ 3 2))");
+    expect(p("2**3**2")).toBe("(^ 2 (^ 3 2))");
+    expect(p("10^-3")).toBe("(^ 10 (- 3))");
+    expect(p("2^(1 + 2)")).toBe("(^ 2 {(+ 1 2)})");
+    expect(p("(1 + 1)^10")).toBe("{(^ {(+ 1 1)} 10)}");
+  });
+
+  it("applies scale, unit and labels after a power to its result", () => {
+    expect(p("2^10 KB")).toBe("(* (^ 2 10) 1 size:1000)");
+    expect(p("10^3 M")).toBe("(* (^ 10 3) 1000000)");
+    expect(p("10^6 photos / day")).toBe("(/ (* (^ 10 6) 1[photos]) time:86400)");
+    expect(p("(1 + 1)^10 users")).toBe("{(^ {(+ 1 1)} 10)}[users]");
+  });
+
   it("parses unary minus", () => {
     expect(p("-5")).toBe("(- 5)");
     expect(p("10 - -5")).toBe("(- 10 (- 5))");
@@ -87,6 +113,10 @@ describe("parse", () => {
     ["5 MB 3", "unexpected number 3", 5],
     ["100M photos day", 'unexpected "day"', 12],
     ["* 5", 'expected a number, got "*"', 0],
+    ["10^", 'expected a number after "^" at end of line', 3],
+    ["10^MB", 'expected a number after "^", got "MB"', 3],
+    ["10 * * 6", 'expected a number, got "*"', 5],
+    ["2 MB ^ 2", 'unexpected "^"', 5],
   ])("rejects %s", (line, message, pos) => {
     const e = errorOf(line);
     expect(e.message).toBe(message);

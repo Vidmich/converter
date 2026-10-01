@@ -2,7 +2,8 @@
 
 import { EngineError } from "./errors";
 
-export type Op = "+" | "-" | "*" | "/";
+/** "^" is power, also written "**" (two adjacent stars). */
+export type Op = "+" | "-" | "*" | "/" | "^";
 
 export type Token =
   | { kind: "num"; value: number; pos: number; end: number }
@@ -26,6 +27,7 @@ const SYMBOL_OPS: Record<string, Op> = {
   "·": "*",
   "/": "/",
   "÷": "/",
+  "^": "^",
 };
 
 // Words that act as operators: "50B x 70KB", "100M per day".
@@ -67,6 +69,9 @@ export function lex(line: string): LexResult {
       } else {
         tokens.push({ kind: "word", text, pos: start, end: i, spaced });
       }
+    } else if (c === "*" && line[i + 1] === "*") {
+      i += 2;
+      tokens.push({ kind: "op", op: "^", pos: start, end: i });
     } else if (SYMBOL_OPS[c]) {
       i++;
       tokens.push({ kind: "op", op: SYMBOL_OPS[c], pos: start, end: i });

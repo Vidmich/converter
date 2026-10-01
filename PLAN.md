@@ -32,9 +32,13 @@ bit rate for data sizes).
 line      := expr? comment?
 comment   := '#' anything
 expr      := term (('+' | '-') term)*
-term      := factor (('*' | 'x' | '×' | '/') factor)*
-factor    := '(' expr ')' | quantity | '/' period
-quantity  := number scale? unit? label*
+term      := unary (('*' | 'x' | '×' | '/') unary)*
+unary     := '-' unary | factor
+factor    := '(' expr ')' (POW exponent)? label* | quantity | '/' period
+quantity  := number (POW exponent)? scale? unit? label*
+exponent  := '-' exponent | (number | '(' expr ')') (POW exponent)?
+POW       := '^' | '**'      (binds tightest, right-associative: -2^2 = -4, 2^3^2 = 2^9;
+                              both sides must be plain numbers; 2^10 KB = (2^10) × 1 KB)
 number    := digits with optional ',' or '_' thousands separators (3-digit groups,
              mixable) and an optional '.' fraction and exponent, e.g. 1,200, 1_200, 3.5, 1e6
 scale     := K | M | B | T            (thousand, million, billion, trillion)

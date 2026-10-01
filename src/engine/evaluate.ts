@@ -55,6 +55,23 @@ function evalNode(node: Node): Quantity {
       return { ...q, value: -q.value };
     }
 
+    case "power": {
+      const base = evalNode(node.base);
+      const exp = evalNode(node.exponent);
+      if (exp.dim !== "count" || exp.timeExp !== 0) {
+        throw new EngineError("the exponent must be a plain number", node.pos);
+      }
+      if (exp.value === 1) return base;
+      if (base.dim !== "count" || base.timeExp !== 0) {
+        throw new EngineError(`can't raise ${kind(base)} to a power`, node.pos);
+      }
+      const value = Math.pow(base.value, exp.value);
+      if (Number.isNaN(value)) {
+        throw new EngineError("can't raise a negative number to a fractional power", node.pos);
+      }
+      return { value, dim: "count", timeExp: 0, label: base.label };
+    }
+
     case "binary": {
       const a = evalNode(node.left);
       const b = evalNode(node.right);

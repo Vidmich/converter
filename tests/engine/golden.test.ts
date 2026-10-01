@@ -78,6 +78,39 @@ describe("golden: case-insensitive suffixes", () => {
   });
 });
 
+// Organizer issue #5: powers with ^ and **
+describe("golden: powers", () => {
+  it.each([
+    ["10^6 photos / day", "1M photos / day"],
+    ["10**6 photos / day", "1M photos / day"],
+    ["10 ^ 6 photos per day", "1M photos / day"],
+    ["2 * 10^3", "2000"],
+    ["10^3 M", "1B"],
+    ["10^-3", "0.001"],
+    ["100^0.5", "10"],
+  ])("%s = %s", (line, same) => {
+    expect(evaluateLine(line)).toEqual(evaluateLine(same));
+  });
+
+  it.each([
+    ["2^10 KB", value("~1 MB")],
+    ["2^10", value("~1,000")], // 1,024 → normal 2-digit rounding
+    ["-2^2", value("-4")],
+    ["2^3^2", value("~510")], // 512
+    ["2^3^2 / 2^9", value("1")], // proves 2^3^2 = 2^9 exactly
+    ["(1 + 1)^10 users", labelled("users", "~1,000")],
+    ["2^20 photos / day", labelled("photos", "~380 M /year", "~1 M /day", "~12 /s")],
+    ["(2 MB)^2", error("can't raise a size to a power", 6)],
+    ["(10 / s)^2", error("can't raise a count per time to a power", 8)],
+    ["2^(3 MB)", error("the exponent must be a plain number", 1)],
+    ["(-8)^0.5", error("can't raise a negative number to a fractional power", 4)],
+    ["10^400", error("number is too large")],
+    ["(2 MB)^1", value("2 MB")],
+  ])("%s", (line, expected) => {
+    expect(evaluateLine(line)).toEqual(expected);
+  });
+});
+
 describe("golden: spelling variants give the same result", () => {
   it.each([
     "100M photos/day",

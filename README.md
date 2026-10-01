@@ -23,6 +23,7 @@ Results update as you type. The row for the line the caret is on is highlighted.
 | Sizes (bits) | `bit(s)`, `Kbit`, `Mbit`, `Gbit`, `Tbit`, `Pbit` | Bits are always spelled out (`Mb` means megabytes). Stored as bytes ÷ 8 |
 | Bit rates | `bps`, `Kbps`, `Mbps`, `Gbps`, `Tbps`, `Pbps` | Any case. Already "per second" |
 | Periods | `s`/`sec`, `min`, `h`/`hr`/`hour`, `d`/`day`, `wk`/`week`, `mo`/`month`, `y`/`yr`/`year` (plurals too) | Year = 365 days, month = 30 days. Minutes are `min`: `m` is million |
+| Powers | `10^6`, `10 ** 6`, `2^10 KB`, `(1 + 1)^10` | Before everything else, right to left: `-2^2` = −4, `2^3^2` = 2^9. A unit after a power applies to the result |
 | Operators | `+  -  *  x  ×  /  ÷  per`, parentheses | `* /` before `+ -` |
 | Labels | any other word after a quantity: `100M photos` | Shown once before the results (`photos:`). Labels of all parts are combined (`100M photos * 4MB size` → `photos size`); `(…) users` replaces the labels inside |
 | Comments | `# anything` | A whole line or the end of a line |

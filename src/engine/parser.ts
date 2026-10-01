@@ -3,9 +3,13 @@
 //   expr     := term (('+' | '-') term)*
 //   term     := unary (('*' | '/') unary)*
 //   unary    := '-' unary | factor
-//   factor   := '(' expr ')' label* | quantity
-//   quantity := number scale? unit? label*  |  unit label*
+//   factor   := '(' expr ')' ('^' exponent)? label* | quantity
+//   quantity := number ('^' exponent)? scale? unit? label*  |  unit label*
+//   exponent := '-' exponent | (number | '(' expr ')') ('^' exponent)?
 //
+// "^" (also "**") binds tighter than unary minus and is right-associative:
+// -2^2 = -4, 2^3^2 = 2^9. Scale, unit and labels after a power apply to its
+// result: 2^10 KB = (2^10) × 1 KB.
 // A bare unit counts as one of that unit, which is what makes "/ day" and
 // "per second" work. Labels are spaced words that are not units or scales.
 
@@ -24,7 +28,8 @@ export type Node =
     }
   | { type: "group"; expr: Node; labels: string[]; pos: number }
   | { type: "neg"; operand: Node; pos: number }
-  | { type: "binary"; op: Op; left: Node; right: Node; pos: number };
+  | { type: "power"; base: Node; exponent: Node; pos: number }
+  | { type: "binary"; op: Exclude<Op, "^">; left: Node; right: Node; pos: number };
 
 export function parse(tokens: Token[], lineLength: number): Node {
   return new Parser(tokens, lineLength).parseLine();
@@ -81,26 +86,25 @@ class Parser {
     }
 
     if (t.kind === "lparen") {
-      this.i++;
-      const expr = this.parseExpr();
-      const close = this.peek();
-      if (close?.kind !== "rparen") {
-        throw new EngineError('missing ")"', close?.pos ?? this.lineLength);
+      let expr: Node = this.parseParens();
+      const pow = this.takePower();
+      if (pow) {
+        const base: Node = { type: "group", expr, labels: [], pos: t.pos };
+        expr = { type: "power", base, exponent: this.parseExponent(), pos: pow.pos };
       }
-      this.i++;
       return { type: "group", expr, labels: this.parseLabels(), pos: t.pos };
     }
 
     if (t.kind === "num") {
       this.i++;
-      let value = t.value;
-      const scale = this.peekWord();
-      const factor = scale && lookupScale(scale.text)?.factor;
-      if (factor !== undefined) {
-        this.i++;
-        value *= factor;
-      }
-      return { type: "quantity", value, unit: this.parseUnit(), labels: this.parseLabels(), pos: t.pos };
+      const pow = this.takePower();
+      if (!pow) return this.parseQuantityTail(t.value, t.pos);
+
+      const base: Node = { type: "quantity", value: t.value, labels: [], pos: t.pos };
+      const power: Node = { type: "power", base, exponent: this.parseExponent(), pos: pow.pos };
+      const tail = this.parseQuantityTail(1, t.pos);
+      const plain = tail.type === "quantity" && tail.value === 1 && !tail.unit && tail.labels.length === 0;
+      return plain ? power : { type: "binary", op: "*", left: power, right: tail, pos: pow.pos };
     }
 
     if (t.kind === "word") {
@@ -113,6 +117,60 @@ class Parser {
     }
 
     throw new EngineError(`expected a number, got ${describe(t)}`, t.pos);
+  }
+
+  /** Scale, unit and labels after a number: the "M photos" in "100M photos". */
+  private parseQuantityTail(value: number, pos: number): Node {
+    const scale = this.peekWord();
+    const factor = scale && lookupScale(scale.text)?.factor;
+    if (factor !== undefined) {
+      this.i++;
+      value *= factor;
+    }
+    return { type: "quantity", value, unit: this.parseUnit(), labels: this.parseLabels(), pos };
+  }
+
+  /** The exponent after "^": a number or parenthesised expression, optionally negated or raised again. */
+  private parseExponent(): Node {
+    const t = this.peek();
+    if (t?.kind === "op" && t.op === "-") {
+      this.i++;
+      return { type: "neg", operand: this.parseExponent(), pos: t.pos };
+    }
+    let node: Node;
+    if (t?.kind === "num") {
+      this.i++;
+      node = { type: "quantity", value: t.value, labels: [], pos: t.pos };
+    } else if (t?.kind === "lparen") {
+      node = { type: "group", expr: this.parseParens(), labels: [], pos: t.pos };
+    } else {
+      const where = t ? `, got ${describe(t)}` : " at end of line";
+      throw new EngineError(`expected a number after "^"${where}`, t?.pos ?? this.lineLength);
+    }
+    const pow = this.takePower();
+    return pow ? { type: "power", base: node, exponent: this.parseExponent(), pos: pow.pos } : node;
+  }
+
+  /** Parses "( expr )" starting at the "(" and returns the inner expression. */
+  private parseParens(): Node {
+    this.i++;
+    const expr = this.parseExpr();
+    const close = this.peek();
+    if (close?.kind !== "rparen") {
+      throw new EngineError('missing ")"', close?.pos ?? this.lineLength);
+    }
+    this.i++;
+    return expr;
+  }
+
+  /** Consumes a "^" (or "**") token if it is next. */
+  private takePower(): Token | undefined {
+    const t = this.peek();
+    if (t?.kind === "op" && t.op === "^") {
+      this.i++;
+      return t;
+    }
+    return undefined;
   }
 
   /** An optional unit right after a number or scale. A glued unknown word is an error. */
@@ -162,7 +220,7 @@ function describe(t: Token): string {
     case "word":
       return `"${t.text}"`;
     case "op":
-      return `"${t.op}"`;
+      return `"${t.op}"`; // "**" is reported as "^"
     case "lparen":
       return '"("';
     case "rparen":

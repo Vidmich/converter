@@ -8,7 +8,7 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
   Found: rustc 1.98.1 (stable-x86_64-pc-windows-msvc), Node 24.21.0 / npm 9.9.3, WebView2 154, VS Community 2026 with VC tools, git 2.39.1.
 - [x] **T2. Scaffold the Tauri app.** Run `npm create tauri-app@latest` with the vanilla TypeScript + Vite template in `H:\ai\converter`. Set the app name/identifier (`Converter`, `com.wizard.converter`) and a window size of 720×480.
   Done: Tauri 2.12, Vite 8, TS 6. Removed the template's greet demo and the opener plugin, set a 420×300 minimum window size and `withGlobalTauri: false`, and moved the UI entry to `src/ui/`.
-- [ ] **T3. Add Vitest.** Install `vitest`, add `npm test`, and create the `src/engine/` and `tests/engine/` folders with a placeholder test.
+- [x] **T3. Add Vitest.** Install `vitest`, add `npm test`, and create the `src/engine/` and `tests/engine/` folders with a placeholder test.
 - [ ] **T4. Smoke run.** `npm run tauri dev` opens an empty window and `npm test` passes.
 
 ## M2 — Calculation engine (`src/engine`)

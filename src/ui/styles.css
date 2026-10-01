@@ -12,6 +12,7 @@
   --text: #1d2026;
   --muted: #7a808c;
   --border: #dfe2e7;
+  --current: #e8ebf0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +22,7 @@
     --text: #e4e6eb;
     --muted: #8a909c;
     --border: #33373f;
+    --current: #2c3038;
   }
 }
 
@@ -71,8 +73,9 @@ body {
 #results {
   background: var(--panel);
   display: grid;
-  /* line number, then up to four result columns aligned across rows */
-  grid-template-columns: auto repeat(4, max-content);
+  /* line number, up to four result columns aligned across rows, then a filler
+     so rows (and the current-row highlight) span the full width */
+  grid-template-columns: auto repeat(4, max-content) 1fr;
   grid-auto-rows: var(--line-height);
   align-content: start;
   justify-content: start;
@@ -84,6 +87,13 @@ body {
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
   white-space: nowrap;
+}
+
+.row.current {
+  background: var(--current);
+  /* extend the highlight across the panel's padding */
+  margin: 0 calc(-1 * var(--pad));
+  padding: 0 var(--pad);
 }
 
 .ln {

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
 import { evaluateLine } from "../../src/engine";
-import { debounce, renderResults } from "../../src/ui/render";
+import { debounce, highlightRow, lineAt, renderResults } from "../../src/ui/render";
 
 const rowTexts = (container: HTMLElement) =>
   [...container.querySelectorAll(".row")].map((row) => [...row.children].map((c) => c.textContent));
@@ -40,6 +40,36 @@ describe("renderResults", () => {
     renderResults(container, ["1", "2", "3"].map(evaluateLine));
     renderResults(container, ["1"].map(evaluateLine));
     expect(container.querySelectorAll(".row")).toHaveLength(1);
+  });
+});
+
+describe("lineAt", () => {
+  it.each([
+    ["", 0, 0],
+    ["abc", 2, 0],
+    ["a\nb\nc", 0, 0],
+    ["a\nb\nc", 1, 0], // caret right before the newline
+    ["a\nb\nc", 2, 1], // caret at the start of line 2
+    ["a\nb\nc", 5, 2],
+    ["a\n\n", 3, 2],
+  ])("lineAt(%j, %d) = %d", (text, offset, line) => {
+    expect(lineAt(text, offset)).toBe(line);
+  });
+});
+
+describe("highlightRow", () => {
+  it("moves the current marker to the given row", () => {
+    const container = document.createElement("div");
+    renderResults(container, ["1", "2", "3"].map(evaluateLine));
+    highlightRow(container, 1);
+    highlightRow(container, 2);
+    const current = [...container.querySelectorAll(".row")].map((r) => r.classList.contains("current"));
+    expect(current).toEqual([false, false, true]);
+  });
+
+  it("ignores rows that don't exist yet", () => {
+    const container = document.createElement("div");
+    expect(() => highlightRow(container, 3)).not.toThrow();
   });
 });
 

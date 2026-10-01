@@ -37,6 +37,22 @@ export function renderResults(container: HTMLElement, results: LineResult[]): vo
   container.replaceChildren(...rows);
 }
 
+/** Zero-based index of the line containing character `offset` of `text`. */
+export function lineAt(text: string, offset: number): number {
+  let line = 0;
+  for (let i = text.indexOf("\n"); i !== -1 && i < offset; i = text.indexOf("\n", i + 1)) line++;
+  return line;
+}
+
+/** Marks row `index` as the current one (the caret's line) and scrolls it into view. */
+export function highlightRow(container: HTMLElement, index: number): void {
+  container.querySelector(".row.current")?.classList.remove("current");
+  const row = container.children[index];
+  if (!row) return;
+  row.classList.add("current");
+  row.scrollIntoView?.({ block: "nearest" });
+}
+
 /** Returns a function that runs `fn` once calls have stopped for `ms` milliseconds. */
 export function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (...args: A) => void {
   let timer: ReturnType<typeof setTimeout> | undefined;

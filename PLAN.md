@@ -8,7 +8,7 @@ bit rate for data sizes).
 ```
 100M photos / day        →  36.5 B photos /year   100 M photos /day   ~1,200 photos /s
 50B x 70KB / day         →  ~1.3 EB /year   3.5 PB /day   ~41 GB /s   ~320 Gbps
-4 MB * 100M/day          →  ~150 PB /year   400 TB /day   ~4.6 GB /s   ~37 Gbps
+4 MB * 100M/day          →  146 PB /year   400 TB /day   ~4.6 GB /s   ~37 Gbps
 ```
 
 ## Decisions
@@ -65,8 +65,12 @@ Adding requires matching dimensions. Results with any other dimension
 
 ### Labels & comments
 
-- The first label word in a line is kept and shown in every result column:
-  `100M photos / day` → `36.5 B photos /year`.
+- Spaced words after a quantity that are not units are its label, and all of
+  them are kept (`100M daily photos` → `daily photos`). The leftmost labelled
+  operand wins, but a label written after `( … )` overrides the labels inside.
+  The label appears in the `/year`, `/day` and `/s` columns but not in the
+  bit-rate column: `100M photos / day` → `36.5 B photos /year`.
+- A word glued to a number that isn't a known unit is an error (`5qb`).
 - `#` starts a comment: a line with only a comment gives an empty result row,
   and text after `#` on an expression line is ignored.
 
@@ -86,9 +90,11 @@ Number formatting:
 - Count: below 10,000 → plain with thousands separators (`~1,200`); otherwise
   `K`, `M`, `B`, `T`, `Q` suffixes (`36.5 B`).
 - Bytes: `B, KB, MB, GB, TB, PB, EB, ZB`. Pick the largest unit where the value is ≥ 1.
-- Round to 2 significant digits **except** when the exact scaled value has
-  ≤ 3 significant digits (so `36.5 B` and `3.5 PB` stay exact). Show a `~` prefix
+- Round to 2 significant digits **except** when the exact value has
+  ≤ 3 significant digits (so `36.5 B`, `3.5 PB` and `146 PB` stay exact). Show a `~` prefix
   whenever the shown value differs from the exact value by more than 1e-9 relative.
+- The suffix/unit is chosen *after* rounding, so `999.7 KB` → `~1 MB` and `9,999` → `~10 K`.
+- Magnitudes below 0.001 use exponent form (`1 /year` → `~3.2e-8 /s`).
 
 ## Architecture
 

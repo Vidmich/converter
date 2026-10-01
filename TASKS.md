@@ -9,7 +9,8 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 - [x] **T2. Scaffold the Tauri app.** Run `npm create tauri-app@latest` with the vanilla TypeScript + Vite template in `H:\ai\converter`. Set the app name/identifier (`Converter`, `com.wizard.converter`) and a window size of 720×480.
   Done: Tauri 2.12, Vite 8, TS 6. Removed the template's greet demo and the opener plugin, set a 420×300 minimum window size and `withGlobalTauri: false`, and moved the UI entry to `src/ui/`.
 - [x] **T3. Add Vitest.** Install `vitest`, add `npm test`, and create the `src/engine/` and `tests/engine/` folders with a placeholder test.
-- [ ] **T4. Smoke run.** `npm run tauri dev` opens an empty window and `npm test` passes.
+- [x] **T4. Smoke run.** `npm run tauri dev` opens an empty window and `npm test` passes.
+  Verified: the first dev build takes about 1m20s, then the window opens with the title "Converter". `npm test` passes (1 test).
 
 ## M2 — Calculation engine (`src/engine`)
 

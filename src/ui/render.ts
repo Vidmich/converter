@@ -20,10 +20,7 @@ export function renderResults(container: HTMLElement, results: LineResult[]): vo
 
     if (result.kind === "value") {
       for (const text of result.columns) {
-        const cell = doc.createElement("span");
-        cell.className = text.startsWith("~") ? "cell approx" : "cell";
-        cell.textContent = text;
-        row.append(cell);
+        row.append(createCell(doc, text));
       }
     } else if (result.kind === "error") {
       const cell = doc.createElement("span");
@@ -35,6 +32,35 @@ export function renderResults(container: HTMLElement, results: LineResult[]): vo
     return row;
   });
   container.replaceChildren(...rows);
+}
+
+/**
+ * Builds a result cell such as "~1,200 photos /s". The leading "~" and the
+ * trailing period (" /s") get their own spans so they can be shown subtly.
+ */
+function createCell(doc: Document, text: string): HTMLElement {
+  const cell = doc.createElement("span");
+  cell.className = "cell";
+  let rest = text;
+  if (rest.startsWith("~")) {
+    cell.classList.add("approx");
+    cell.append(span(doc, "tilde", "~"));
+    rest = rest.slice(1);
+  }
+  const per = rest.lastIndexOf(" /");
+  if (per === -1) {
+    cell.append(rest);
+  } else {
+    cell.append(rest.slice(0, per), span(doc, "per", rest.slice(per)));
+  }
+  return cell;
+}
+
+function span(doc: Document, className: string, text: string): HTMLElement {
+  const el = doc.createElement("span");
+  el.className = className;
+  el.textContent = text;
+  return el;
 }
 
 /** Zero-based index of the line containing character `offset` of `text`. */

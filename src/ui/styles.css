@@ -13,6 +13,7 @@
   --muted: #7a808c;
   --border: #dfe2e7;
   --current: #e8ebf0;
+  --error: #b4493f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +24,7 @@
     --muted: #8a909c;
     --border: #33373f;
     --current: #2c3038;
+    --error: #e0857b;
   }
 }
 
@@ -102,6 +104,13 @@ body {
   user-select: none;
 }
 
+.tilde,
+.per {
+  color: var(--muted);
+}
+
 .error {
   grid-column: 2 / -1;
+  color: var(--error);
+  font-family: var(--font-ui);
 }

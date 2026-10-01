@@ -27,7 +27,7 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 - [x] **T12. Layout.** Input textarea on top and results panel below (CSS grid, resizable split optional). Monospace font, with a placeholder showing the three examples.
 - [x] **T13. Live evaluation.** On input (debounced ~50 ms), split the text into lines, call `evaluateLine` for each and render one result row per line so row *n* matches line *n*.
 - [x] **T14. Line alignment & focus highlight.** Keep the results panel scrolled in sync with the input and highlight the result row for the line under the caret.
-- [ ] **T15. Error & state styling.** Errors in muted red, comment and empty rows blank, `~` values styled subtly. Light and dark theme via `prefers-color-scheme`.
+- [x] **T15. Error & state styling.** Errors in muted red, comment and empty rows blank, `~` values styled subtly. Light and dark theme via `prefers-color-scheme`.
 - [ ] **T16. Manual check.** Type the brief's examples plus a few edge cases in `tauri dev` and confirm the output matches the golden tests.
 
 ## M4 — Packaging

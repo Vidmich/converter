@@ -32,6 +32,8 @@ describe("renderResults", () => {
 
     const cells = [...container.querySelectorAll(".cell")];
     expect(cells.map((c) => c.classList.contains("approx"))).toEqual([false, false, true]);
+    expect(cells[2].querySelector(".tilde")?.textContent).toBe("~");
+    expect(cells.map((c) => c.querySelector(".per")?.textContent)).toEqual([" /year", " /day", " /s"]);
     expect(container.querySelector<HTMLElement>(".error")!.title).toBe("at column 2");
   });
 

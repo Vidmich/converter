@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAY, MONTH, YEAR, lookupScale, lookupUnit } from "../../src/engine/units";
+import { DAY, MONTH, YEAR, lookupScale, lookupUnit, miscasedUnitHint } from "../../src/engine/units";
 
 describe("lookupScale", () => {
   it.each([
@@ -84,6 +84,15 @@ describe("lookupUnit", () => {
   it("uses 365-day years and 30-day months", () => {
     expect(YEAR).toBe(365 * 86_400);
     expect(MONTH).toBe(30 * 86_400);
+  });
+
+  it("hints at the right spelling for miscased byte units", () => {
+    expect(miscasedUnitHint("Mb")).toBe('ambiguous unit "Mb": use MB for bytes or Mbit for bits');
+    expect(miscasedUnitHint("kb")).toBe('ambiguous unit "kb": use KB for bytes or Kbit for bits');
+    expect(miscasedUnitHint("MB")).toBeUndefined();
+    expect(miscasedUnitHint("kB")).toBeUndefined();
+    expect(miscasedUnitHint("b")).toBeUndefined();
+    expect(miscasedUnitHint("photos")).toBeUndefined();
   });
 
   it("does not know labels", () => {

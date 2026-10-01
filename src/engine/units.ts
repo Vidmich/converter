@@ -68,6 +68,9 @@ const WORD_UNITS: Record<string, Unit> = {
   mbit: { kind: "size", factor: 1e6 / 8 },
   gbit: { kind: "size", factor: 1e9 / 8 },
   tbit: { kind: "size", factor: 1e12 / 8 },
+  pbit: { kind: "size", factor: 1e15 / 8 },
+  ebit: { kind: "size", factor: 1e18 / 8 },
+  zbit: { kind: "size", factor: 1e21 / 8 },
 
   bps: { kind: "rate", factor: 1 / 8 },
   kbps: { kind: "rate", factor: 1e3 / 8 },
@@ -112,6 +115,18 @@ const PERIODS: Record<string, number> = {
 export function lookupScale(word: string): Scale | undefined {
   const factor = CASE_SENSITIVE_SCALES[word] ?? WORD_SCALES[word.toLowerCase()];
   return factor === undefined ? undefined : { factor };
+}
+
+/**
+ * For a word that looks like a byte unit in the wrong case ("Mb", "gb"),
+ * returns a hint naming the byte and bit spellings; otherwise undefined.
+ */
+export function miscasedUnitHint(word: string): string | undefined {
+  if (BYTE_UNITS[word] !== undefined) return undefined;
+  const upper = word.toUpperCase();
+  if (upper === "B" || BYTE_UNITS[upper] === undefined) return undefined;
+  const prefix = upper[0] === "K" ? "K" : upper[0];
+  return `ambiguous unit "${word}": use ${upper} for bytes or ${prefix}bit for bits`;
 }
 
 /** Returns the unit for a word such as "MB", "Gbps", "bits" or "day", if it is one. */

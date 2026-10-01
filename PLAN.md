@@ -48,6 +48,9 @@ label     := any other word, e.g. photos, users, requests
 
 - `B` directly after a number with **no** byte prefix means **billion** (`50B` = 5·10¹⁰).
   To mean bytes, write `byte` / `bytes` or use a prefixed unit (`KB`, `MB`…).
+- Byte units must end in an upper-case `B` (`KB`, `kB`, `MB`…). A byte unit in
+  the wrong case (`Mb`, `gb`) is an error with a hint (`use MB for bytes or
+  Mbit for bits`) rather than being silently treated as a label.
 - `x` is multiplication only between two quantities (`50B x 70KB`).
 - `/ day`, `/day` and `per day` all mean "divided by one day".
 - A space between number and scale/unit is allowed (`4 MB`, `100 M`).

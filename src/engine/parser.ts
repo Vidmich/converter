@@ -11,7 +11,7 @@
 
 import { EngineError } from "./errors";
 import type { Op, Token } from "./lexer";
-import { lookupScale, lookupUnit, type Unit } from "./units";
+import { lookupScale, lookupUnit, miscasedUnitHint, type Unit } from "./units";
 
 export type Node =
   | {
@@ -124,9 +124,7 @@ class Parser {
       this.i++;
       return unit;
     }
-    if (!w.spaced) {
-      throw new EngineError(`unknown unit "${w.text}"`, w.pos);
-    }
+    checkNotUnitLike(w);
     return undefined;
   }
 
@@ -135,7 +133,7 @@ class Parser {
     const labels: string[] = [];
     for (let w = this.peekWord(); w; w = this.peekWord()) {
       if (lookupUnit(w.text) || lookupScale(w.text)) break;
-      if (!w.spaced) throw new EngineError(`unknown unit "${w.text}"`, w.pos);
+      checkNotUnitLike(w);
       labels.push(w.text);
       this.i++;
     }
@@ -150,6 +148,17 @@ class Parser {
     const t = this.peek();
     return t?.kind === "word" ? t : undefined;
   }
+}
+
+/**
+ * Rejects a word that can't be a label: one glued to the previous token
+ * ("5qb") or a byte unit in the wrong case ("5 Mb"), which would otherwise
+ * silently become a label and give a wrong answer.
+ */
+function checkNotUnitLike(w: Extract<Token, { kind: "word" }>): void {
+  const hint = miscasedUnitHint(w.text);
+  if (hint) throw new EngineError(hint, w.pos);
+  if (!w.spaced) throw new EngineError(`unknown unit "${w.text}"`, w.pos);
 }
 
 function describe(t: Token): string {

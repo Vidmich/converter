@@ -17,7 +17,7 @@ Results update as you type. The row for the line the caret is on is highlighted.
 
 | What | Write | Notes |
 |---|---|---|
-| Numbers | `42`, `3.5`, `.5`, `1,200`, `1e6` | Commas must group exactly 3 digits |
+| Numbers | `42`, `3.5`, `.5`, `1,200`, `1_200`, `1e6` | `,` and `_` separate groups of exactly 3 digits and can be mixed (`1,000_000`) |
 | Scales | `K` thousand, `M` million, `B` billion, `T` trillion; or the words `thousand`, `million`, `billion`, `trillion` | Any case (`100m` = `100M`). `B`/`b` alone is **always billion** |
 | Sizes (bytes) | `byte(s)`, `KB`, `MB`, `GB`, `TB`, `PB`, `EB`, `ZB` | Any case (`mb` = `Mb` = `MB`). Decimal: 1 KB = 1000 B |
 | Sizes (bits) | `bit(s)`, `Kbit`, `Mbit`, `Gbit`, `Tbit`, `Pbit` | Bits are always spelled out (`Mb` means megabytes). Stored as bytes ÷ 8 |

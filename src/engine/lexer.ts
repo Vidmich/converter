@@ -85,9 +85,12 @@ export function lex(line: string): LexResult {
   return { tokens };
 }
 
+/** Thousands separators in the integer part; they may be mixed (1,000_000). */
+const isGroupSeparator = (c: string | undefined) => c === "," || c === "_";
+
 /**
- * Reads a number such as 42, 1,200, 3.5, .5 or 1e6 and pushes a num token.
- * Commas are thousands separators and must be followed by exactly 3 digits.
+ * Reads a number such as 42, 1,200, 1_200, 3.5, .5 or 1e6 and pushes a num token.
+ * "," and "_" are thousands separators and must be followed by exactly 3 digits.
  */
 function readNumber(line: string, start: number, tokens: Token[]): number {
   let i = start;
@@ -98,7 +101,7 @@ function readNumber(line: string, start: number, tokens: Token[]): number {
   };
 
   readDigits();
-  while (line[i] === "," && isDigit(line[i + 1] ?? "")) {
+  while (isGroupSeparator(line[i]) && isDigit(line[i + 1] ?? "")) {
     const group = line.slice(i + 1).match(/^\d+/)![0];
     if (group.length !== 3) {
       throw new EngineError(`bad thousands separator in "${line.slice(start, i + 1 + group.length)}"`, i);

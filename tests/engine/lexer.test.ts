@@ -32,6 +32,10 @@ describe("lex", () => {
     [".5", 0.5],
     ["1,200", 1200],
     ["100,000,000", 100_000_000],
+    ["1_200", 1200],
+    ["100_000_000", 100_000_000],
+    ["1,000_000", 1_000_000],
+    ["1_000.5", 1000.5],
     ["1e6", 1e6],
     ["2.5E-3", 2.5e-3],
   ])("reads number %s", (text, value) => {
@@ -41,6 +45,14 @@ describe("lex", () => {
   it("rejects bad thousands separators", () => {
     expect(() => lex("1,20")).toThrow(EngineError);
     expect(() => lex("1,2345")).toThrow(/thousands separator/);
+    expect(() => lex("1_20")).toThrow('bad thousands separator in "1_20"');
+    expect(() => lex("1_2345")).toThrow(/thousands separator/);
+    expect(() => lex("1,000_20")).toThrow('bad thousands separator in "1,000_20"');
+  });
+
+  it("only groups the integer part", () => {
+    // "_5" after the decimals is not a separator; it becomes a glued word, which the parser rejects
+    expect(kinds("1.000_5")).toEqual([1, "w:_5"]);
   });
 
   it("splits a scale glued to a number", () => {

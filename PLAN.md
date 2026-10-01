@@ -35,7 +35,8 @@ expr      := term (('+' | '-') term)*
 term      := factor (('*' | 'x' | '×' | '/') factor)*
 factor    := '(' expr ')' | quantity | '/' period
 quantity  := number scale? unit? label*
-number    := digits with optional '.' and ',' separators, e.g. 1,200 or 3.5
+number    := digits with optional ',' or '_' thousands separators (3-digit groups,
+             mixable) and an optional '.' fraction and exponent, e.g. 1,200, 1_200, 3.5, 1e6
 scale     := K | M | B | T            (thousand, million, billion, trillion)
 unit      := byte | bytes | KB | MB | GB | TB | PB | EB | ZB   (bytes)
            | bit | bits | Kbit | Mbit | Gbit | … | Zbit        (bits)

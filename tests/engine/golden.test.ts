@@ -79,7 +79,14 @@ describe("golden: case-insensitive suffixes", () => {
 });
 
 describe("golden: spelling variants give the same result", () => {
-  it.each(["100M photos/day", "100 M photos / day", "100,000,000 photos per day", "100 million photos per day"])(
+  it.each([
+    "100M photos/day",
+    "100 M photos / day",
+    "100,000,000 photos per day",
+    "100_000_000 photos per day", // issue #4
+    "100,000_000 photos / day",
+    "100 million photos per day",
+  ])(
     "%s",
     (line) => {
       expect(evaluateLine(line)).toEqual(evaluateLine("100M photos / day"));
@@ -121,6 +128,8 @@ describe("golden: errors", () => {
   it.each([
     ["5 $ 3", error('unexpected "$"', 2)],
     ["1,20", error('bad thousands separator in "1,20"', 1)],
+    ["1_20", error('bad thousands separator in "1_20"', 1)],
+    ["1.000_5", error('unknown unit "_5"', 5)],
     ["5qb", error('unknown unit "qb"', 1)],
     ["100M photos mb", error('unexpected "mb"', 12)],
     ["photos / day", error('expected a number before "photos"', 0)],

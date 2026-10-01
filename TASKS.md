@@ -14,7 +14,7 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 
 ## M2 — Calculation engine (`src/engine`)
 
-- [ ] **T5. Unit tables (`units.ts`).** Scales (K/M/B/T), byte units (B…EB), bit units (bit…Gbit), bit rates (bps…Tbps) and periods (s…year, with year = 365 d and month = 30 d). Lookups are case-insensitive for words, but `B` = billion vs byte follows the ambiguity rules in PLAN.md.
+- [x] **T5. Unit tables (`units.ts`).** Scales (K/M/B/T), byte units (B…EB), bit units (bit…Gbit), bit rates (bps…Tbps) and periods (s…year, with year = 365 d and month = 30 d). Lookups are case-insensitive for words, but `B` = billion vs byte follows the ambiguity rules in PLAN.md.
 - [ ] **T6. Lexer (`lexer.ts`).** Tokens for numbers (with `,` grouping and `.` decimals), words, operators `+ - * x × /`, parens and `#` comments. Tests cover each token kind and the spacing variants (`100M`, `100 M`, `/day`, `/ day`, `per day`).
 - [ ] **T7. Parser (`parser.ts`).** Recursive descent to an AST using the PLAN.md grammar, with precedence `* /` over `+ -` and parentheses. It handles number+scale+unit+label grouping and returns errors with a position. Tests cover valid and invalid lines.
 - [ ] **T8. Evaluator (`evaluate.ts`).** AST to `Quantity { value, dim, timeExp, label }`, with dimension rules (no bytes×bytes, matching dims for + and -, timeExp must end up 0 or −1) and clear error messages.

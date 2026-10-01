@@ -103,10 +103,10 @@ converter/
 │  │  ├─ evaluate.ts     AST → Quantity { value, dim: 'count'|'bytes', timeExp, label }
 │  │  ├─ format.ts       Quantity → display columns (rounding, unit pick, ~)
 │  │  └─ index.ts        evaluateLine(text) → LineResult
-│  ├─ ui/
-│  │  ├─ main.ts         wires textarea → engine → results panel
-│  │  └─ styles.css
-│  └─ index.html
+│  └─ ui/
+│     ├─ main.ts         wires textarea → engine → results panel
+│     └─ styles.css
+├─ index.html            Vite entry (project root, as Vite expects)
 └─ tests/engine/*.test.ts
 ```
 

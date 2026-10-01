@@ -1,0 +1,17 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+#app {
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+}

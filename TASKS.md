@@ -36,4 +36,4 @@ See [PLAN.md](PLAN.md) for the design. Status: `[ ]` open, `[x]` done.
 - [x] **T17. App icon & metadata.** Generate icons (`npm run tauri icon`), set the window title, version and description.
 - [x] **T18. Windows build.** `npm run tauri build` produces an `.msi`/NSIS installer. Install it, run it and confirm it starts quickly with no console window.
   Done: the release build takes ~4 min (LTO). Outputs are `bundle/msi/Converter_0.1.0_x64_en-US.msi` (1.86 MiB) and `bundle/nsis/Converter_0.1.0_x64-setup.exe` (1.26 MiB). The NSIS setup installed per-user to `%LOCALAPPDATA%\Converter` (silent `/S`, exit 0). The window appeared in ~0.3 s; GUI subsystem, no console; exe 4.1 MB, ~32 MB RAM.
-- [ ] **T19. README.** What the app does, input syntax cheat sheet, how to build and test.
+- [x] **T19. README.** What the app does, input syntax cheat sheet, how to build and test.

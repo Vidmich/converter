@@ -18,6 +18,20 @@ describe("golden: brief examples", () => {
   });
 });
 
+describe("golden: README examples", () => {
+  it.each([
+    ["10K requests / s", value("~320 B requests /year", "864 M requests /day", "10 K requests /s")],
+    ["10K/s * 2 KB", value("~630 TB /year", "~1.7 TB /day", "20 MB /s", "160 Mbps")],
+    ["1 TB / 2 days", value("~180 TB /year", "500 GB /day", "~5.8 MB /s", "~46 Mbps")],
+    ["10 Gbps * 1 day", value("108 TB")],
+    ["1 TB / 4 MB", value("250 K")],
+    ["(10M + 5M) users / month", value("~180 M users /year", "500 K users /day", "~5.8 users /s")],
+    ["1 MB + 5", error("can't add a count to a size", 5)],
+  ])("%s", (line, expected) => {
+    expect(evaluateLine(line)).toEqual(expected);
+  });
+});
+
 describe("golden: spelling variants give the same result", () => {
   it.each(["100M photos/day", "100 M photos / day", "100,000,000 photos per day", "100 million photos per day"])(
     "%s",

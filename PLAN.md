@@ -141,12 +141,20 @@ unit-tested with Vitest and reused later in a CLI or web build.
 ### UI
 
 - One window (~720×480, resizable), split vertically:
-  - **Top:** a monospace `<textarea>` (or a contenteditable with line numbers), with a placeholder showing the examples.
-  - **Bottom:** a results panel with one row per input line. Columns are
+  - **Top:** a monospace `<textarea>`, empty at start (no placeholder).
+  - **Middle:** a results panel with one row per input line. Columns are
     aligned in a CSS grid, and the row for the line under the cursor is
     highlighted.
+  - **Bottom** (Organizer issue #6): a collapsible legend (short cheat sheet)
+    above a one-line bar. The bar holds the "▾ Legend" toggle on the left and
+    the theme switch **System / Light / Dark** on the right. The legend is
+    expanded on the first run; both choices are remembered (`localStorage`).
+    At the minimum size the legend scrolls instead of squeezing the panels.
 - Re-evaluate on `input`, debounced to about 50 ms (evaluation is trivial, so mostly to avoid flicker).
-- Follows the system light/dark theme via `prefers-color-scheme`.
+- Theme: **System** (default) follows `prefers-color-scheme`; **Light/Dark**
+  set `data-theme` on `<html>` (applied by an inline script before first
+  paint) and the native title bar via `setTheme` (`core:window:allow-set-theme`).
+  Code: `src/ui/chrome.ts`.
 
 ## Milestones
 

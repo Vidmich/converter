@@ -5,6 +5,13 @@
     <link rel="stylesheet" href="/src/ui/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Converter</title>
+    <script>
+      // Apply a saved Light/Dark choice before the first paint (no flash). See src/ui/chrome.ts.
+      try {
+        const theme = localStorage.getItem("converter.theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
     <script type="module" src="/src/ui/main.ts" defer></script>
   </head>
 
@@ -17,9 +24,38 @@
         autocomplete="off"
         wrap="off"
         autofocus
-        placeholder="100M photos / day&#10;50B x 70KB / day&#10;4 MB * 100M/day"
       ></textarea>
       <section id="results" aria-label="Results" aria-live="polite"></section>
+      <footer id="legend">
+        <dl id="legend-body" aria-label="Legend">
+          <dt>Numbers</dt>
+          <dd><code>1,200</code> <code>1_200</code> <code>3.5</code> <code>1e6</code> <code>10^6</code> <code>2**10</code></dd>
+          <dt>Scales</dt>
+          <dd><code>k</code> <code>m</code> <code>b</code> <code>t</code> or <code>thousand</code> … <code>trillion</code>, any case</dd>
+          <dt>Sizes</dt>
+          <dd>
+            <code>byte</code> <code>KB</code> <code>MB</code> <code>GB</code> <code>TB</code> <code>PB</code> <code>EB</code>
+            · <code>bit</code> <code>Kbit</code> <code>Mbit</code> … · <code>bps</code> <code>Mbps</code> <code>Gbps</code>
+          </dd>
+          <dt>Time</dt>
+          <dd>
+            <code>s</code> <code>min</code> <code>h</code> <code>day</code> <code>week</code> <code>month</code> <code>year</code>
+            — <code>/ day</code> or <code>per day</code>
+          </dd>
+          <dt>Math</dt>
+          <dd>
+            <code>+ - * x / ( )</code> · labels <code>100M photos</code> · comments <code># note</code>
+          </dd>
+        </dl>
+        <div id="bar">
+          <button id="legend-toggle" type="button" aria-expanded="true" aria-controls="legend-body">▾ Legend</button>
+          <div id="theme" role="group" aria-label="Theme">
+            <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
+            <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+          </div>
+        </div>
+      </footer>
     </main>
   </body>
 </html>

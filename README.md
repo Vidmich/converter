@@ -13,6 +13,10 @@ second, plus a bit rate for data sizes.
 
 Results update as you type. The row for the line the caret is on is highlighted.
 
+The bar at the bottom has a **Legend** toggle (a short cheat sheet that folds
+into the bar) and a **System / Light / Dark** theme switch. Both are
+remembered; the legend starts open on the first run.
+
 ## Input cheat sheet
 
 | What | Write | Notes |
@@ -105,7 +109,7 @@ npm run tauri icon app-icon.svg
 ```
 src/engine/   pure TypeScript calculator: units → lexer → parser → evaluate → format
               public API: evaluateLine(line) in src/engine/index.ts
-src/ui/       main.ts (wiring), render.ts (result rows), styles.css
+src/ui/       main.ts (wiring), render.ts (result rows), chrome.ts (legend + theme), styles.css
 src-tauri/    Tauri 2 shell (no custom Rust commands)
 tests/        Vitest: tests/engine/*.test.ts, tests/ui/render.test.ts
 ```

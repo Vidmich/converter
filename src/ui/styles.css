@@ -70,4 +70,28 @@ body {
 
 #results {
   background: var(--panel);
+  display: grid;
+  /* line number, then up to four result columns aligned across rows */
+  grid-template-columns: auto repeat(4, max-content);
+  grid-auto-rows: var(--line-height);
+  align-content: start;
+  justify-content: start;
+  column-gap: 2.5ch;
+}
+
+.row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  white-space: nowrap;
+}
+
+.ln {
+  color: var(--muted);
+  text-align: right;
+  user-select: none;
+}
+
+.error {
+  grid-column: 2 / -1;
 }
